@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>video2png - 動画フレーム抽出</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-video logo-icon"></i>
+                    <h1>video2png</h1>
+                </div>
+                <p class="sub">動画をアップロードして、PNGフレームに変換</p>
+            </div>
+            <button class="theme-toggle" id="themeToggle" aria-label="テーマ切替">
+                <i class="fas fa-moon" id="themeIcon"></i>
+            </button>
+        </header>
+
+        <main>
+            <!-- アップロードゾーン -->
+            <section class="upload-zone" id="uploadZone">
+                <div class="upload-inner">
+                    <i class="fas fa-upload upload-icon"></i>
+                    <p class="upload-title">動画ファイルをドラッグ＆ドロップ</p>
+                    <p class="upload-hint">またはクリックして選択（MP4 / WebM / OGG 対応）</p>
+                </div>
+                <input type="file" id="fileInput" accept="video/*" />
+            </section>
+
+            <!-- プレビュー＆コントロール（アップロード後に表示） -->
+            <section class="preview" id="previewSection">
+                <div class="video-container">
+                    <video id="videoPlayer" controls muted playsinline preload="metadata"></video>
+                </div>
+
+                <div class="video-info">
+                    <span class="info-badge"><i class="fas fa-video"></i> <span id="videoName">—</span></span>
+                    <span class="info-badge"><i class="fas fa-clock"></i> <span id="videoDuration">0</span>秒</span>
+                    <span class="info-badge"><i class="fas fa-expand"></i> <span id="videoResolution">—</span></span>
+                    <span class="info-badge" id="fpsInfo"><i class="fas fa-cog"></i> FPS: —</span>
+                </div>
+
+                <div class="count-setting">
+                    <label for="frameCountSlider"><i class="fas fa-images"></i> 抽出枚数</label>
+                    <div class="slider-wrapper">
+                        <input type="range" id="frameCountSlider" min="1" max="50" value="50" step="1" />
+                        <span class="count-value" id="frameCountValue">50</span>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-primary" id="extractBtn"><i class="fas fa-bolt"></i> フレームを抽出</button>
+                    <button class="btn btn-success" id="downloadAllBtn" disabled><i class="fas fa-file-archive"></i> ZIPで一括保存</button>
+                    <span class="status" id="statusText">準備完了</span>
+                </div>
+
+                <div class="progress" id="progressWrap">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+
+                <div class="frame-list" id="frameScroll">
+                    <div class="frame-grid" id="frameGrid">
+                        <p class="empty"><i class="fas fa-arrow-up"></i> 動画をアップロードして「抽出」を押してください</p>
+                    </div>
+                </div>
+
+                <!-- 抽出フレーム数表示（プレビュー内） -->
+                <div class="frame-counter">
+                    <span id="frameCountLabel">抽出フレーム: 0</span>
+                </div>
+            </section>
+
+            <!-- ★★★★★ 常時表示フッター ★★★★★ -->
+            <footer class="site-footer">
+                <div class="footer-left" id="footerLeft">
+                    <button class="btn btn-ghost" id="clearBtn"><i class="fas fa-trash"></i> クリア</button>
+                </div>
+                <div class="footer-center">
+                    <span class="copyright">Copyright &copy; 2026 yukkuri-pit. Built with video2png (MIT).</span>
+                </div>
+                <div class="footer-right">
+                    <span class="note" id="footerNote"><i class="fas fa-info-circle"></i> 最大50フレーム / スライダーで枚数調整</span>
+                    <button class="btn btn-ghost" id="termsBtn"><i class="fas fa-file-contract"></i> 利用規約</button>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- 利用規約モーダル -->
+    <div class="modal-overlay" id="termsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-contract"></i> 利用規約</h2>
+                <button class="modal-close" id="termsCloseBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>最終更新日：2026年6月20日</strong></p>
+
+                <p>この利用規約（以下「本規約」といいます）は、video2png（以下「本サービス」といいます）の利用条件を定めるものです。本サービスをご利用になる前に、本規約をよくお読みください。本サービスを利用した時点で、本規約に同意したものとみなされます。</p>
+
+                <h3>第1条（定義）</h3>
+                <ul>
+                    <li><strong>「本サービス」</strong> とは、ユーザーがアップロードした動画ファイルから静止画（PNG形式）を抽出するWebアプリケーション（video2png）を指します。</li>
+                    <li><strong>「ユーザー」</strong> とは、本サービスを利用するすべての個人または法人を指します。</li>
+                    <li><strong>「コンテンツ」</strong> とは、ユーザーが本サービスにアップロードする動画ファイル、およびそこから生成される画像ファイルを指します。</li>
+                </ul>
+
+                <h3>第2条（サービスの内容）</h3>
+                <ol>
+                    <li>本サービスは、ユーザーがアップロードした動画ファイルをブラウザ上で処理し、指定された枚数のフレームをPNG画像として抽出する機能を提供します。</li>
+                    <li>本サービスは<strong>クライアントサイドで完結</strong>します。つまり、アップロードされた動画ファイルや生成された画像は、ユーザーのブラウザ上でのみ処理され、当社のサーバーには一切送信・保存されません。</li>
+                    <li>本サービスは、ユーザーが指定した抽出枚数に基づいてフレームを抽出しますが、動画の内容や品質によっては意図した通りの結果が得られない場合があります。</li>
+                </ol>
+
+                <h3>第3条（禁止事項）</h3>
+                <p>ユーザーは、本サービスの利用にあたり、以下の行為を行ってはなりません。</p>
+                <ol>
+                    <li>法令または公序良俗に反するコンテンツをアップロードする行為</li>
+                    <li>他者の著作権、商標権、肖像権、プライバシー権、その他一切の権利を侵害するコンテンツをアップロードする行為</li>
+                    <li>ウイルス、マルウェア、その他の有害なプログラムを含むファイルをアップロードする行為</li>
+                    <li>本サービスの運営を妨害する行為、または過度な負荷をかける行為</li>
+                    <li>本サービスをリバースエンジニアリング、逆コンパイル、逆アセンブルする行為</li>
+                    <li>本サービスを不正な目的で利用する行為</li>
+                    <li>その他、当社が不適切と判断する行為</li>
+                </ol>
+
+                <h3>第4条（免責事項）</h3>
+                <ol>
+                    <li>本サービスは「現状のまま」提供されるものであり、当社は以下のいずれについても一切の保証を行いません。
+                        <ul>
+                            <li>本サービスがユーザーの期待通りの結果を生成すること</li>
+                            <li>本サービスが中断なく動作すること、またはバグやエラーがないこと</li>
+                            <li>本サービスが特定の目的に適合すること</li>
+                            <li>本サービスのセキュリティが完全であること</li>
+                        </ul>
+                    </li>
+                    <li>当社は、本サービスの利用または利用不能により生じたいかなる損害（直接的損害、間接的損害、付随的損害、結果的損害、逸失利益を含みますがこれらに限りません）について、一切の責任を負いません。</li>
+                    <li>ユーザーが本サービスを利用して生成した画像を第三者に提供・公開する場合、そのすべての責任はユーザー自身が負うものとします。</li>
+                </ol>
+
+                <h3>第5条（コンテンツの権利と責任）</h3>
+                <ol>
+                    <li>本サービスはコンテンツの抽出機能を提供するものであり、コンテンツ自体の著作権やその他の権利は、元のコンテンツの権利者に帰属します。</li>
+                    <li>ユーザーは、アップロードするコンテンツについて、必要なすべての権利を有しているか、適法に利用する権限を有していることを保証します。</li>
+                    <li>ユーザーは、アップロードしたコンテンツに関して第三者との間で紛争が生じた場合、自己の費用と責任でこれを解決するものとし、当社に一切の迷惑や損害を与えないものとします。</li>
+                </ol>
+
+                <h3>第6条（知的財産権）</h3>
+                <ol>
+                    <li>本サービスを構成するソースコード、デザイン、ロゴ、テキスト、画像等のすべての知的財産権は、当社または正当な権利者に帰属します。</li>
+                    <li>ユーザーは、本規約で明示的に認められた範囲を超えて、本サービスの知的財産を複製、改変、頒布、翻案、または商業利用してはなりません。</li>
+                </ol>
+
+                <h3>第7条（サービスの変更・中断・終了）</h3>
+                <ol>
+                    <li>当社は、以下のいずれかに該当する場合、ユーザーに事前に通知することなく、本サービスの全部または一部を中断または終了することができます。
+                        <ul>
+                            <li>システムのメンテナンスやアップデートを実施する場合</li>
+                            <li>火災、停電、地震、その他の不可抗力によりサービス提供が困難となった場合</li>
+                            <li>その他、当社がやむを得ないと判断した場合</li>
+                        </ul>
+                    </li>
+                    <li>当社は、本サービスの仕様を予告なく変更することがあります。</li>
+                    <li>当社は、本サービスの変更、中断、終了によりユーザーに生じたいかなる損害についても責任を負いません。</li>
+                </ol>
+
+                <h3>第8条（本規約の変更）</h3>
+                <ol>
+                    <li>当社は、必要に応じて本規約を変更することができます。</li>
+                    <li>本規約を変更する場合、当社は本サービス上での掲示またはその他の適切な方法によりユーザーに通知します。</li>
+                    <li>本規約の変更後、ユーザーが本サービスを利用した場合、変更後の規約に同意したものとみなされます。</li>
+                </ol>
+
+                <h3>第9条（準拠法・管轄裁判所）</h3>
+                <ol>
+                    <li>本規約の解釈および適用は、日本法に準拠するものとします。</li>
+                    <li>本サービスに関連する紛争については、当社の所在地を管轄する裁判所を専属的合意管轄裁判所とします。</li>
+                </ol>
+
+                <h3>第10条（お問い合わせ）</h3>
+                <p>本規約に関するご質問やご意見は、本サービスのGitHubリポジトリのIssueセクションよりお問い合わせください。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="termsCloseBtn2">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
