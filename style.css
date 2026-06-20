@@ -1,4 +1,4 @@
-/* ----- ルートフォントサイズを可変に（これが全体のスケールを決める） ----- */
+/* ----- ルートフォントサイズを可変に ----- */
 html {
     font-size: clamp(12px, 1.8vw, 20px);
 }
@@ -51,6 +51,9 @@ html {
 
     --slider-track: #d0dae8;
     --slider-thumb: #1a3a6b;
+
+    /* GitHubアイコン用 */
+    --github-color: #24292f;
 }
 
 /* ----- ダークテーマ ----- */
@@ -101,6 +104,8 @@ html {
 
     --slider-track: #3a4a6a;
     --slider-thumb: #4a8af0;
+
+    --github-color: #e8edf5;
 }
 
 /* ----- ベース ----- */
@@ -187,7 +192,34 @@ main {
     transition: color 0.3s, border-color 0.3s;
 }
 
-/* ----- テーマ切替ボタン ----- */
+/* ----- ヘッダー右側アクション（GitHub + テーマ切替） ----- */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* GitHubリンク */
+.github-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 50%;
+    background: var(--btn-bg);
+    color: var(--github-color);
+    font-size: 1.5rem;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+    text-decoration: none;
+}
+.github-link:hover {
+    background: var(--btn-bg-hover);
+    transform: scale(1.05);
+}
+
+/* テーマ切替ボタン */
 .theme-toggle {
     background: var(--btn-bg);
     border: none;
@@ -578,7 +610,7 @@ main {
     transition: color 0.3s;
 }
 
-/* ----- フレームカウンター（プレビュー内） ----- */
+/* ----- フレームカウンター ----- */
 .frame-counter {
     margin-top: 0.3rem;
     font-size: 0.9rem;
@@ -773,7 +805,7 @@ main {
     }
 }
 
-/* ----- メディアクエリ（補助） ----- */
+/* ----- メディアクエリ ----- */
 @media (max-width: 600px) {
     html {
         font-size: clamp(11px, 2.2vw, 14px);
@@ -793,6 +825,19 @@ main {
     .header {
         flex-direction: row;
         align-items: center;
+    }
+    .header-actions {
+        gap: 0.3rem;
+    }
+    .github-link {
+        width: 2.2rem;
+        height: 2.2rem;
+        font-size: 1.1rem;
+    }
+    .theme-toggle {
+        width: 2.2rem;
+        height: 2.2rem;
+        font-size: 1rem;
     }
     .count-setting {
         flex-direction: column;
@@ -845,7 +890,6 @@ main {
     }
 }
 
-/* 超小型画面 */
 @media (max-width: 400px) {
     html {
         font-size: 10px;
@@ -887,9 +931,18 @@ main {
     .site-footer .copyright {
         font-size: 0.55rem;
     }
+    .github-link {
+        width: 1.8rem;
+        height: 1.8rem;
+        font-size: 0.9rem;
+    }
+    .theme-toggle {
+        width: 1.8rem;
+        height: 1.8rem;
+        font-size: 0.8rem;
+    }
 }
 
-/* 大型画面 */
 @media (min-width: 1400px) {
     html {
         font-size: 20px;
@@ -913,5 +966,15 @@ main {
     .frame-grid {
         grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
         gap: 1.4rem;
+    }
+    .github-link {
+        width: 3.2rem;
+        height: 3.2rem;
+        font-size: 1.8rem;
+    }
+    .theme-toggle {
+        width: 3.2rem;
+        height: 3.2rem;
+        font-size: 1.4rem;
     }
 }
